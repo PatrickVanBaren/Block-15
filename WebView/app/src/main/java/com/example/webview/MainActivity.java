@@ -79,27 +79,29 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void evaluateJs2() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mWebView.evaluateJavascript("document.getElementById('someText').value", value -> {
+                final Intent intent = new Intent(MainActivity.this, TextActivity.class);
+                intent.putExtra("textString", value);
+                startActivity(intent);
+            });
+        } else {
+            mWebView.loadUrl("javascript:" + "document.getElementById('msg').innerHTML");
+        }
+    }
+
     public class WebAppInterface {
 
         @JavascriptInterface
         public void showToast(final String toast) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    evaluateJs("document.getElementById('msg').innerHTML = '" + mRandom.nextLong() + "'");
-                }
-            });
+            mHandler.post(() -> evaluateJs("document.getElementById('msg').innerHTML = '" + mRandom.nextLong() + "'"));
             Toast.makeText(MainActivity.this, toast, Toast.LENGTH_SHORT).show();
         }
 
         @JavascriptInterface
-        public void showActivity(final String text) {
-            mHandler.post(() -> {
-                Intent intent = new Intent(MainActivity.this, TextActivity.class);
-//                intent.putExtra("textString", );
-//                String textByHtml = evaluateJs("document.getElementById('msg').innerHTML=document.forms['idform'].elements['id'].value");
-                startActivity(intent);
-            });
+        public void showText() {
+            mHandler.post(() -> evaluateJs2());
         }
     }
 }
